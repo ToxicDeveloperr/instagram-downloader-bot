@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: instagram-downloader-bot
+    runtime: python
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.13
