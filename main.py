@@ -18,6 +18,7 @@ from telegram.ext import (
     ContextTypes,
     filters
 )
+from flask import Flask  # New for Render port binding
 
 # Load environment variables
 load_dotenv()
@@ -28,6 +29,17 @@ logging.basicConfig(
     level=logging.INFO,
 )
 logger = logging.getLogger(__name__)
+
+# Flask app for Render port binding
+flask_app = Flask(__name__)
+
+@flask_app.route("/")
+def home():
+    return "✅ Instagram Bot is Running!"
+
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    flask_app.run(host="0.0.0.0", port=port)
 
 # Config
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -210,4 +222,5 @@ async def main():
     await app.run_polling()
 
 if __name__ == "__main__":
+    threading.Thread(target=run_flask).start()
     asyncio.run(main())
