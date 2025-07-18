@@ -9,8 +9,8 @@ import requests
 from datetime import datetime
 from instaloader import Instaloader, Post
 from dotenv import load_dotenv
-from telegram import Update, ChatAction, InputFile
-from telegram.constants import ParseMode
+from telegram import Update, InputFile
+from telegram.constants import ChatAction, ParseMode
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -92,11 +92,11 @@ def log_user_data(user):
         logger.error(f"Error logging user data: {e}")
 
 def extract_shortcode(instagram_post):
-    match = re.search(r"instagram\\.com/(?:p|reel|tv)/([^/?#&]+)", instagram_post)
+    match = re.search(r"instagram\.com/(?:p|reel|tv)/([^/?#&]+)", instagram_post)
     return match.group(1) if match else None
 
 def is_valid_instagram_url(url):
-    return bool(re.match(r"https?://(www\\.)?instagram\\.com/(p|reel|tv)/", url))
+    return bool(re.match(r"https?://(www\.)?instagram\.com/(p|reel|tv)/", url))
 
 def fetch_instagram_data(instagram_post):
     shortcode = extract_shortcode(instagram_post)
@@ -110,6 +110,7 @@ def fetch_instagram_data(instagram_post):
         logger.error(f"Error fetching Instagram data: {e}")
         return None
 
+# /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     log_user_data(user)
@@ -122,9 +123,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "👋 Welcome to the Instagram Saver Bot!\n\n"
         "📩 Send me any **public** Instagram link (post, reel, or IGTV), and I'll fetch the media for you.\n"
         "⚠️ Make sure the post is **public** and not private.\n\n"
-        "Happy downloading! 🎉"
+        "Happy downloading! 🎉",
+        parse_mode=ParseMode.MARKDOWN
     )
 
+# /users command (admin only)
 async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     if user.id != get_admin():
@@ -155,6 +158,7 @@ async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"Error reading user log: {e}")
         await update.message.reply_text("⚠️ An error occurred while retrieving user data.")
 
+# Main media handler
 async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     log_user_data(user)
@@ -194,6 +198,7 @@ async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if os.path.exists(file_name):
             os.remove(file_name)
 
+# Start the app
 async def main():
     app = ApplicationBuilder().token(TOKEN).build()
 
